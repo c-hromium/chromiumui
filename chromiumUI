@@ -584,28 +584,28 @@ G2L["3e"]["ScrollBarThickness"] = 0;
 G2L["3e"]["BackgroundTransparency"] = 1;
 
 
--- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.config
+-- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.confignames
 G2L["3f"] = Instance.new("Frame", G2L["3e"]);
 G2L["3f"]["BorderSizePixel"] = 0;
 G2L["3f"]["BackgroundColor3"] = Color3.fromRGB(32, 32, 32);
 G2L["3f"]["Size"] = UDim2.new(0, 326, 0, 49);
 G2L["3f"]["Position"] = UDim2.new(0.02614, 0, 0.01027, 0);
 G2L["3f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["3f"]["Name"] = [[config]];
+G2L["3f"]["Name"] = [[confignames]];
 
 
--- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.config.UICorner
+-- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.confignames.UICorner
 G2L["40"] = Instance.new("UICorner", G2L["3f"]);
 G2L["40"]["CornerRadius"] = UDim.new(0, 20);
 
 
--- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.config.UIStroke
+-- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.confignames.UIStroke
 G2L["41"] = Instance.new("UIStroke", G2L["3f"]);
 G2L["41"]["Thickness"] = 2.5;
 G2L["41"]["Color"] = Color3.fromRGB(39, 39, 39);
 
 
--- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.config.titlenme
+-- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.confignames.titlenme
 G2L["42"] = Instance.new("TextLabel", G2L["3f"]);
 G2L["42"]["TextWrapped"] = true;
 G2L["42"]["BorderSizePixel"] = 0;
@@ -623,7 +623,7 @@ G2L["42"]["Name"] = [[titlenme]];
 G2L["42"]["Position"] = UDim2.new(0.02454, 0, 0, 0);
 
 
--- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.config.configname
+-- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.confignames.configname
 G2L["43"] = Instance.new("TextBox", G2L["3f"]);
 G2L["43"]["Name"] = [[configname]];
 G2L["43"]["BorderSizePixel"] = 0;
@@ -639,7 +639,7 @@ G2L["43"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["43"]["Text"] = [[]];
 
 
--- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.config.configname.UICorner
+-- StarterGui.ScreenGui.mainframe.tabbackground.settingspage.confignames.configname.UICorner
 G2L["44"] = Instance.new("UICorner", G2L["43"]);
 G2L["44"]["CornerRadius"] = UDim.new(0, 25);
 
@@ -732,176 +732,126 @@ G2L["4d"]["CornerRadius"] = UDim.new(0, 25);
 local function C_2()
 local script = G2L["2"];
 	local TweenService = game:GetService("TweenService")
-	local Players = game:GetService("Players")
 	local HttpService = game:GetService("HttpService")
 	
-	local LocalPlayer = Players.LocalPlayer
-	local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+	local screenGui = script:FindFirstAncestorWhichIsA("ScreenGui")
+	if not screenGui then return end
 	
 	local FILE_NAME = "SavedConfigs.json"
 	
-	-- Clean up pre-existing UI instance
-	local existingGui = PlayerGui:FindFirstChild("StandaloneConfigSystem")
-	if existingGui then
-		existingGui:Destroy()
+	-- ============================================================================
+	-- 1. LOCATE DESIGNED UI ELEMENTS
+	-- ============================================================================
+	local configNameObj = screenGui:FindFirstChild("confignames", true)
+	local configNameBox = nil
+	
+	if configNameObj then
+		if configNameObj:IsA("TextBox") then
+			configNameBox = configNameObj
+		else
+			configNameBox = configNameObj:FindFirstChildWhichIsA("TextBox", true)
+		end
+	end
+	
+	local configDropdown = screenGui:FindFirstChild("configdropdown", true)
+	
+	if configDropdown then
+		configDropdown.ClipsDescendants = false
+		if configDropdown.Parent and configDropdown.Parent:IsA("GuiObject") then
+			configDropdown.Parent.ClipsDescendants = false
+		end
 	end
 	
 	-- ============================================================================
-	-- 1. UI CREATION (Instance.new)
+	-- 2. SETUP DROPDOWN CONTAINER (ScrollingFrame)
 	-- ============================================================================
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "StandaloneConfigSystem"
-	screenGui.ResetOnSpawn = false
-	screenGui.Parent = PlayerGui
+	local dropdownPanel = configDropdown and configDropdown:FindFirstChild("DropdownPanel")
 	
-	-- Main Config Control Frame
-	local configFrame = Instance.new("Frame")
-	configFrame.Name = "config"
-	configFrame.Size = UDim2.new(0, 220, 0, 50)
-	configFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
-	configFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-	configFrame.BorderSizePixel = 0
-	configFrame.Parent = screenGui
+	-- Cleanup old panel if it was a standard Frame
+	if dropdownPanel and not dropdownPanel:IsA("ScrollingFrame") then
+		dropdownPanel:Destroy()
+		dropdownPanel = nil
+	end
 	
-	local configCorner = Instance.new("UICorner")
-	configCorner.CornerRadius = UDim.new(0, 10)
-	configCorner.Parent = configFrame
+	if configDropdown and not dropdownPanel then
+		dropdownPanel = Instance.new("ScrollingFrame")
+		dropdownPanel.Name = "DropdownPanel"
+		dropdownPanel.Size = UDim2.new(1, 0, 0, 0)
+		dropdownPanel.Position = UDim2.new(0, 0, 1, 6)
+		dropdownPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		dropdownPanel.BorderSizePixel = 0
+		dropdownPanel.Visible = false
+		dropdownPanel.ClipsDescendants = true
+		dropdownPanel.ZIndex = 100
+		dropdownPanel.ScrollBarThickness = 4
+		dropdownPanel.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+		dropdownPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
+		dropdownPanel.Parent = configDropdown
 	
-	-- Text Box for Naming Configs
-	local configNameBox = Instance.new("TextBox")
-	configNameBox.Name = "configname"
-	configNameBox.Size = UDim2.new(1, -20, 1, -16)
-	configNameBox.Position = UDim2.new(0, 10, 0, 8)
-	configNameBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-	configNameBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-	configNameBox.PlaceholderText = "Type config name..."
-	configNameBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
-	configNameBox.Text = ""
-	configNameBox.TextSize = 14
-	configNameBox.Font = Enum.Font.SourceSansBold
-	configNameBox.ClearTextOnFocus = false
-	configNameBox.Parent = configFrame
+		local panelCorner = Instance.new("UICorner")
+		panelCorner.CornerRadius = UDim.new(0, 8)
+		panelCorner.Parent = dropdownPanel
 	
-	local boxCorner = Instance.new("UICorner")
-	boxCorner.CornerRadius = UDim.new(0, 6)
-	boxCorner.Parent = configNameBox
+		local listLayout = Instance.new("UIListLayout")
+		listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		listLayout.Padding = UDim.new(0, 4)
+		listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		listLayout.Parent = dropdownPanel
 	
-	-- Dropdown Header Frame
-	local configDropdown = Instance.new("Frame")
-	configDropdown.Name = "configdropdown"
-	configDropdown.Size = UDim2.new(0, 220, 0, 40)
-	configDropdown.Position = UDim2.new(0.05, 0, 0.2, 60)
-	configDropdown.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-	configDropdown.BorderSizePixel = 0
-	configDropdown.ClipsDescendants = false
-	configDropdown.Parent = screenGui
+		local uiPadding = Instance.new("UIPadding")
+		uiPadding.PaddingTop = UDim.new(0, 6)
+		uiPadding.PaddingBottom = UDim.new(0, 6)
+		uiPadding.PaddingLeft = UDim.new(0, 6)
+		uiPadding.PaddingRight = UDim.new(0, 6)
+		uiPadding.Parent = dropdownPanel
 	
-	local dropdownCorner = Instance.new("UICorner")
-	dropdownCorner.CornerRadius = UDim.new(0, 10)
-	dropdownCorner.Parent = configDropdown
-	
-	local dropdownTitle = Instance.new("TextLabel")
-	dropdownTitle.Size = UDim2.new(1, -50, 1, 0)
-	dropdownTitle.Position = UDim2.new(0, 15, 0, 0)
-	dropdownTitle.BackgroundTransparency = 1
-	dropdownTitle.Text = "Saved Configs"
-	dropdownTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-	dropdownTitle.TextXAlignment = Enum.TextXAlignment.Left
-	dropdownTitle.Font = Enum.Font.SourceSansBold
-	dropdownTitle.TextSize = 15
-	dropdownTitle.Parent = configDropdown
-	
-	-- Dropdown Open/Close Toggle Button
-	local dropdownArrow = Instance.new("TextButton")
-	dropdownArrow.Name = "dropdownarrow"
-	dropdownArrow.Size = UDim2.new(0, 30, 0, 30)
-	dropdownArrow.Position = UDim2.new(1, -35, 0.5, -15)
-	dropdownArrow.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	dropdownArrow.Text = "v"
-	dropdownArrow.TextColor3 = Color3.fromRGB(255, 255, 255)
-	dropdownArrow.Font = Enum.Font.SourceSansBold
-	dropdownArrow.TextSize = 14
-	dropdownArrow.Parent = configDropdown
-	
-	local arrowCorner = Instance.new("UICorner")
-	arrowCorner.CornerRadius = UDim.new(0, 6)
-	arrowCorner.Parent = dropdownArrow
-	
-	-- Hidden Template Button for Cloned Config Entries
-	local templateButton = Instance.new("TextButton")
-	templateButton.Name = "button"
-	templateButton.Size = UDim2.new(1, 0, 0, 35)
-	templateButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	templateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	templateButton.Font = Enum.Font.SourceSansMedium
-	templateButton.TextSize = 14
-	templateButton.Visible = false
-	templateButton.Parent = screenGui
-	
-	local templateCorner = Instance.new("UICorner")
-	templateCorner.CornerRadius = UDim.new(0, 6)
-	templateCorner.Parent = templateButton
-	
-	-- Animated Dropdown Panel Container
-	local dropdownPanel = Instance.new("Frame")
-	dropdownPanel.Name = "DropdownPanel"
-	dropdownPanel.Size = UDim2.new(1, 0, 0, 0)
-	dropdownPanel.Position = UDim2.new(0, 0, 1, 5)
-	dropdownPanel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-	dropdownPanel.BorderSizePixel = 0
-	dropdownPanel.Visible = false
-	dropdownPanel.ClipsDescendants = true
-	dropdownPanel.ZIndex = 100
-	dropdownPanel.Parent = configDropdown
-	
-	local panelCorner = Instance.new("UICorner")
-	panelCorner.CornerRadius = UDim.new(0, 12)
-	panelCorner.Parent = dropdownPanel
-	
-	local listLayout = Instance.new("UIListLayout")
-	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	listLayout.Padding = UDim.new(0, 6)
-	listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	listLayout.Parent = dropdownPanel
-	
-	local uiPadding = Instance.new("UIPadding")
-	uiPadding.PaddingTop = UDim.new(0, 8)
-	uiPadding.PaddingBottom = UDim.new(0, 8)
-	uiPadding.PaddingLeft = UDim.new(0, 8)
-	uiPadding.PaddingRight = UDim.new(0, 8)
-	uiPadding.Parent = dropdownPanel
+		-- Automatically expand canvas when new configs are added
+		listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+			dropdownPanel.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 12)
+		end)
+	end
 	
 	-- ============================================================================
-	-- 2. DROPDOWN ANIMATION LOGIC
+	-- 3. DROPDOWN TOGGLE (FIXED 120PX OPEN HEIGHT)
 	-- ============================================================================
 	local isDropdownOpen = false
-	local DROPDOWN_HEIGHT = 180
+	local OPEN_HEIGHT = 120 -- Always opens to a nice clean height
 	local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 	
-	dropdownArrow.MouseButton1Click:Connect(function()
-		isDropdownOpen = not isDropdownOpen
-		dropdownArrow.Text = isDropdownOpen and "^" or "v"
+	local dropdownArrow = configDropdown and (
+		configDropdown:FindFirstChildWhichIsA("TextButton", true) or 
+			configDropdown:FindFirstChildWhichIsA("ImageButton", true) or
+			configDropdown
+	)
 	
-		if isDropdownOpen then
-			dropdownPanel.Visible = true
-			TweenService:Create(dropdownPanel, tweenInfo, {
-				Size = UDim2.new(1, 0, 0, DROPDOWN_HEIGHT)
-			}):Play()
-		else
-			local closeTween = TweenService:Create(dropdownPanel, tweenInfo, {
-				Size = UDim2.new(1, 0, 0, 0)
-			})
-			closeTween:Play()
-			closeTween.Completed:Connect(function()
-				if not isDropdownOpen then
-					dropdownPanel.Visible = false
+	if dropdownArrow and dropdownPanel then
+		local clickable = dropdownArrow:IsA("GuiButton") and dropdownArrow or configDropdown
+		if clickable:IsA("GuiButton") then
+			clickable.MouseButton1Click:Connect(function()
+				isDropdownOpen = not isDropdownOpen
+	
+				if isDropdownOpen then
+					dropdownPanel.Visible = true
+					TweenService:Create(dropdownPanel, tweenInfo, {
+						Size = UDim2.new(1, 0, 0, OPEN_HEIGHT)
+					}):Play()
+				else
+					local closeTween = TweenService:Create(dropdownPanel, tweenInfo, {
+						Size = UDim2.new(1, 0, 0, 0)
+					})
+					closeTween:Play()
+					closeTween.Completed:Connect(function()
+						if not isDropdownOpen then
+							dropdownPanel.Visible = false
+						end
+					end)
 				end
 			end)
 		end
-	end)
+	end
 	
 	-- ============================================================================
-	-- 3. CONFIG LOGIC & LOCAL FILE SAVING
+	-- 4. SAVING & LOADING LOGIC
 	-- ============================================================================
 	local savedConfigs = {}
 	
@@ -909,9 +859,9 @@ local script = G2L["2"];
 		for _, object in ipairs(screenGui:GetDescendants()) do
 			local path = object:GetFullName()
 	
-			-- Apply Sliders
+			-- Sliders
 			local drag = object:FindFirstChild("sliderdrag")
-			if drag and configData.sliders[path] ~= nil then
+			if drag and configData.sliders and configData.sliders[path] ~= nil then
 				local percentage = configData.sliders[path]
 				local fill = object:FindFirstChild("sliderfill")
 				local label = object.Parent:FindFirstChild("value") or object:FindFirstChild("value")
@@ -921,28 +871,37 @@ local script = G2L["2"];
 					fill.Size = UDim2.new(percentage, 0, 1, 0)
 					fill.Visible = (percentage > 0)
 				end
-	
 				if label then
 					label.Text = tostring(math.floor(percentage * 100))
 				end
 			end
 	
-			-- Apply Toggles
+			-- Toggles
 			local circle = object:FindFirstChild("togglecircle")
-			if circle and configData.toggles[path] ~= nil then
+			if circle and configData.toggles and configData.toggles[path] ~= nil then
 				object:SetAttribute("IsEnabled", configData.toggles[path])
 			end
 		end
 	end
 	
 	local function createConfigButton(name)
+		if not dropdownPanel then return end
 		if dropdownPanel:FindFirstChild("Config_" .. name) then return end
 	
-		local newButton = templateButton:Clone()
+		local newButton = Instance.new("TextButton")
 		newButton.Name = "Config_" .. name
 		newButton.Text = name
-		newButton.Visible = true
+		newButton.Size = UDim2.new(1, -8, 0, 26)
+		newButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+		newButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		newButton.Font = Enum.Font.SourceSansMedium
+		newButton.TextSize = 13
+		newButton.ZIndex = 101
 		newButton.Parent = dropdownPanel
+	
+		local btnCorner = Instance.new("UICorner")
+		btnCorner.CornerRadius = UDim.new(0, 6)
+		btnCorner.Parent = newButton
 	
 		newButton.MouseButton1Click:Connect(function()
 			if savedConfigs[name] then
@@ -951,7 +910,6 @@ local script = G2L["2"];
 		end)
 	end
 	
-	-- --- LOCAL FILE SAVE FUNCTION ---
 	local function saveLocalFile()
 		if writefile then
 			local success, encoded = pcall(function()
@@ -959,12 +917,10 @@ local script = G2L["2"];
 			end)
 			if success then
 				writefile(FILE_NAME, encoded)
-				print("[Config System]: Configs successfully written to " .. FILE_NAME)
 			end
 		end
 	end
 	
-	-- --- LOCAL FILE LOAD FUNCTION ---
 	local function loadLocalFile()
 		if readfile and isfile and isfile(FILE_NAME) then
 			local fileData = readfile(FILE_NAME)
@@ -977,27 +933,21 @@ local script = G2L["2"];
 				for configName, _ in pairs(savedConfigs) do
 					createConfigButton(configName)
 				end
-				print("[Config System]: Loaded saved configs from " .. FILE_NAME)
 			end
 		end
 	end
 	
-	-- --- SAVE CONFIGURATION ---
 	local function saveCurrentConfig(name)
 		if name == "" or savedConfigs[name] then return end
 	
 		local currentData = { sliders = {}, toggles = {} }
 	
-		-- Save Sliders
 		for _, object in ipairs(screenGui:GetDescendants()) do
 			local drag = object:FindFirstChild("sliderdrag")
 			if drag then
 				currentData.sliders[object:GetFullName()] = drag.Position.X.Scale
 			end
-		end
 	
-		-- Save Toggles
-		for _, object in ipairs(screenGui:GetDescendants()) do
 			local circle = object:FindFirstChild("togglecircle")
 			if circle then
 				currentData.toggles[object:GetFullName()] = object:GetAttribute("IsEnabled") or false
@@ -1006,22 +956,19 @@ local script = G2L["2"];
 	
 		savedConfigs[name] = currentData
 		createConfigButton(name)
-	
-		-- Write to local file whenever a new config is created
 		saveLocalFile()
 	end
 	
-	configNameBox.FocusLost:Connect(function(enterPressed)
-		if configNameBox.Text ~= "" then
-			saveCurrentConfig(configNameBox.Text)
-			configNameBox.Text = ""
-		end
-	end)
+	-- Connect text input
+	if configNameBox then
+		configNameBox.FocusLost:Connect(function(enterPressed)
+			if configNameBox.Text ~= "" then
+				saveCurrentConfig(configNameBox.Text)
+				configNameBox.Text = ""
+			end
+		end)
+	end
 	
-	-- ============================================================================
-	-- 4. INITIALIZE ON SCRIPT STARTUP
-	-- ============================================================================
-	-- Read and rebuild saved configs from disk as soon as the script executes
 	loadLocalFile()
 end;
 task.spawn(C_2);
