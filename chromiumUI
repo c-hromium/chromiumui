@@ -48,7 +48,6 @@ G2L["5"]["CornerRadius"] = UDim.new(0, 25);
 
 -- StarterGui.ScreenGui.mainframe
 G2L["6"] = Instance.new("Frame", G2L["1"]);
-G2L["6"]["Interactable"] = false;
 G2L["6"]["BorderSizePixel"] = 0;
 G2L["6"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 G2L["6"]["Size"] = UDim2.new(0, 525, 0, 577);
