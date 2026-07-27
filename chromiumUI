@@ -7,7 +7,7 @@
  Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
 ]=]
 
--- Instances: 77 | Scripts: 7 | Modules: 0 | Tags: 0
+-- Instances: 80 | Scripts: 7 | Modules: 0 | Tags: 0
 local G2L = {};
 
 -- StarterGui.ScreenGui
@@ -48,6 +48,7 @@ G2L["5"]["CornerRadius"] = UDim.new(0, 25);
 
 -- StarterGui.ScreenGui.mainframe
 G2L["6"] = Instance.new("Frame", G2L["1"]);
+G2L["6"]["Interactable"] = false;
 G2L["6"]["BorderSizePixel"] = 0;
 G2L["6"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 G2L["6"]["Size"] = UDim2.new(0, 525, 0, 577);
@@ -713,9 +714,37 @@ G2L["4c"]["Name"] = [[minimisebutton]];
 G2L["4c"]["Position"] = UDim2.new(0.87166, 0, 0.03529, 0);
 
 
+-- StarterGui.ScreenGui.mainframe.status
+G2L["4d"] = Instance.new("Frame", G2L["6"]);
+G2L["4d"]["BorderSizePixel"] = 0;
+G2L["4d"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+G2L["4d"]["Size"] = UDim2.new(0, 64, 0, 20);
+G2L["4d"]["Position"] = UDim2.new(0.31619, 0, 0.05113, 0);
+G2L["4d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4d"]["Name"] = [[status]];
+
+
+-- StarterGui.ScreenGui.mainframe.status.UICorner
+G2L["4e"] = Instance.new("UICorner", G2L["4d"]);
+
+
+
+-- StarterGui.ScreenGui.mainframe.status.TextLabel
+G2L["4f"] = Instance.new("TextLabel", G2L["4d"]);
+G2L["4f"]["BorderSizePixel"] = 0;
+G2L["4f"]["TextSize"] = 14;
+G2L["4f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4f"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+G2L["4f"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["4f"]["BackgroundTransparency"] = 1;
+G2L["4f"]["Size"] = UDim2.new(0, 64, 0, 18);
+G2L["4f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4f"]["Text"] = [[v0.1]];
+
+
 -- StarterGui.ScreenGui.mainframe.UIScale
-G2L["4d"] = Instance.new("UIScale", G2L["6"]);
-G2L["4d"]["Scale"] = 0.7;
+G2L["50"] = Instance.new("UIScale", G2L["6"]);
+G2L["50"]["Scale"] = 0.65;
 
 
 -- StarterGui.ScreenGui.configsaving
